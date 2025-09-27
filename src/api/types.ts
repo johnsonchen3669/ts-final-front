@@ -23,3 +23,20 @@ export type AddCartItemParams =
   paths['/v2/api/{api_path}/cart']['post']['requestBody']['content']['application/json']['data']
 
 export type AddCartItemResponse = components['schemas']['userAddCart']
+
+export type UpdateCartItemParams =
+  paths['/v2/api/{api_path}/cart/{id}']['put']['requestBody']['content']['application/json']['data'] &
+    Pick<paths['/v2/api/{api_path}/cart/{id}']['put']['parameters']['path'], 'id'>
+
+export type UpdateCartItemResponse = components['schemas']['userUpdateCart']
+
+export type DeleteCartItemParams =
+  paths['/v2/api/{api_path}/cart/{id}']['delete']['parameters']['path']['id']
+
+export type DeleteCartItemResponse = components['schemas']['userDeleteCart']
+
+// Order
+export type ApplyCouponParams =
+  paths['/v2/api/{api_path}/coupon']['post']['requestBody']['content']['application/json']['data']['code']
+
+export type ApplyCouponResponse = components['schemas']['userApplyCoupon']

@@ -1,6 +1,14 @@
-import { useMutation, useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios from 'axios'
-import type { AddCartItemParams, AddCartItemResponse, GetCartResponse } from './types'
+import type {
+  AddCartItemParams,
+  AddCartItemResponse,
+  DeleteCartItemParams,
+  DeleteCartItemResponse,
+  GetCartResponse,
+  UpdateCartItemParams,
+  UpdateCartItemResponse,
+} from './types'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const API_PATH = import.meta.env.VITE_API_PATH
@@ -39,16 +47,57 @@ const addCartItem = async (params: AddCartItemParams): Promise<AddCartItemRespon
   return res.data
 }
 
+const updateCartItem = async (params: UpdateCartItemParams): Promise<UpdateCartItemResponse> => {
+  const { id: cartId, ...data } = params
+  const res = await cartApi.put(`/v2/api/${API_PATH}/cart/${cartId}`, { data })
+
+  return res.data
+}
+
+const deleteCartItem = async (cartId: DeleteCartItemParams): Promise<DeleteCartItemResponse> => {
+  const res = await cartApi.delete(`/v2/api/${API_PATH}/cart/${cartId}`)
+
+  return res.data
+}
+
 export const apiGetCart = () =>
   useQuery<GetCartResponse, Error>({
     queryKey: ['cart'],
     queryFn: getCart,
   })
 
-export const apiAddCartItem = () =>
-  useMutation<AddCartItemResponse, Error, AddCartItemParams>({
+export const apiAddCartItem = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<AddCartItemResponse, Error, AddCartItemParams>({
     mutationFn: (params) => addCartItem(params),
     onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
       alert(res.message)
     },
   })
+}
+
+export const apiUpdateCartItem = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<UpdateCartItemResponse, Error, UpdateCartItemParams>({
+    mutationFn: (params) => updateCartItem(params),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
+      alert(res.message)
+    },
+  })
+}
+
+export const apiDeleteCartItem = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<DeleteCartItemResponse, Error, DeleteCartItemParams>({
+    mutationFn: (cartId) => deleteCartItem(cartId),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
+      alert(res.message)
+    },
+  })
+}
