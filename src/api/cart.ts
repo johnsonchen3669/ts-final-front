@@ -1,14 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import axios from 'axios'
 import type {
-  AddCartItemParams,
   AddCartItemResponse,
-  DeleteCartItemParams,
   DeleteCartItemResponse,
   GetCartResponse,
-  UpdateCartItemParams,
   UpdateCartItemResponse,
-} from './types'
+} from '@/types/cart'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const API_PATH = import.meta.env.VITE_API_PATH
@@ -35,71 +32,26 @@ cartApi.interceptors.response.use(
   },
 )
 
-const getCart = async (): Promise<GetCartResponse> => {
-  const res = await cartApi.get<{ data: GetCartResponse }>(`/v2/api/${API_PATH}/cart`)
+export const apiGetCart = (): Promise<AxiosResponse<GetCartResponse>> =>
+  cartApi.get(`/v2/api/${API_PATH}/cart`)
 
-  return res.data.data
-}
+export const apiAddCartItem = (params: {
+  product_id: string
+  qty: number
+}): Promise<AxiosResponse<AddCartItemResponse>> =>
+  cartApi.post(`/v2/api/${API_PATH}/cart`, { data: params })
 
-const addCartItem = async (params: AddCartItemParams): Promise<AddCartItemResponse> => {
-  const res = await cartApi.post<AddCartItemResponse>(`/v2/api/${API_PATH}/cart`, { data: params })
-
-  return res.data
-}
-
-const updateCartItem = async (params: UpdateCartItemParams): Promise<UpdateCartItemResponse> => {
+export const apiUpdateCartItem = (params: {
+  product_id: string
+  qty: number
+  id: string
+}): Promise<AxiosResponse<UpdateCartItemResponse>> => {
   const { id: cartId, ...data } = params
-  const res = await cartApi.put<UpdateCartItemResponse>(`/v2/api/${API_PATH}/cart/${cartId}`, {
+
+  return cartApi.put(`/v2/api/${API_PATH}/cart/${cartId}`, {
     data,
   })
-
-  return res.data
 }
 
-const deleteCartItem = async (cartId: DeleteCartItemParams): Promise<DeleteCartItemResponse> => {
-  const res = await cartApi.delete<DeleteCartItemResponse>(`/v2/api/${API_PATH}/cart/${cartId}`)
-
-  return res.data
-}
-
-export const apiGetCart = () =>
-  useQuery<GetCartResponse, Error>({
-    queryKey: ['cart'],
-    queryFn: getCart,
-  })
-
-export const apiAddCartItem = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation<AddCartItemResponse, Error, AddCartItemParams>({
-    mutationFn: (params) => addCartItem(params),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      alert(res.message)
-    },
-  })
-}
-
-export const apiUpdateCartItem = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation<UpdateCartItemResponse, Error, UpdateCartItemParams>({
-    mutationFn: (params) => updateCartItem(params),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      alert(res.message)
-    },
-  })
-}
-
-export const apiDeleteCartItem = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation<DeleteCartItemResponse, Error, DeleteCartItemParams>({
-    mutationFn: (cartId) => deleteCartItem(cartId),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      alert(res.message)
-    },
-  })
-}
+export const apiDeleteCartItem = (cartId: string): Promise<AxiosResponse<DeleteCartItemResponse>> =>
+  cartApi.delete(`/v2/api/${API_PATH}/cart/${cartId}`)

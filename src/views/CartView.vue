@@ -7,11 +7,29 @@ import Navbar from '@/components/Navbar.vue'
 import { apiDeleteCartItem, apiGetCart, apiUpdateCartItem } from '@/api/cart'
 import { apiApplyCoupon } from '@/api/order'
 import { apiGetProducts } from '@/api/products'
+import type { CartInfo } from '@/types/cart'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
 import { onMounted, ref } from 'vue'
 
-const { data: cart } = apiGetCart()
+const cart = ref<CartInfo>({
+  carts: [],
+  total: 0,
+  final_total: 0,
+})
+
+const getCart = async () => {
+  try {
+    const res = await apiGetCart()
+    cart.value = res.data.data
+  } catch (error) {
+    alert('取得購物車失敗')
+  }
+}
+
+onMounted(() => {
+  getCart()
+})
 
 const swiperContainer = ref<HTMLElement | null>(null)
 
@@ -38,28 +56,46 @@ onMounted(() => {
 
 const { data } = apiGetProducts()
 
-const { mutate: updateCartItem, isPending: isUpdating, isSuccess } = apiUpdateCartItem()
+type CartItem = CartInfo['carts'][number]
 
-type CartItem = Exclude<ReturnType<typeof apiGetCart>['data']['value'], undefined>['carts'][number]
+const isUpdating = ref(false)
 
-const handleUpdateCartItem = (type: 'plus' | 'minus', cartItem: CartItem) => {
+const handleUpdateCartItem = async (type: 'plus' | 'minus', cartItem: CartItem) => {
   let cartItemNum = cartItem.qty
   if (type === 'plus') {
     cartItemNum++
   } else {
     cartItemNum--
   }
-  updateCartItem({
-    id: cartItem.id,
-    product_id: cartItem.product.id,
-    qty: cartItemNum,
-  })
+  try {
+    isUpdating.value = true
+
+    await apiUpdateCartItem({
+      id: cartItem.id,
+      product_id: cartItem.product.id,
+      qty: cartItemNum,
+    })
+    await getCart()
+  } catch (error) {
+    alert('更新購物車失敗')
+  } finally {
+    isUpdating.value = false
+  }
 }
 
-const { mutate: deleteCartItem, isPending: isDeleting } = apiDeleteCartItem()
+const isDeleting = ref(false)
 
-const handleDeleteCartItem = (cartId: string) => {
-  deleteCartItem(cartId)
+const handleDeleteCartItem = async (cartId: string) => {
+  try {
+    isDeleting.value = true
+
+    await apiDeleteCartItem(cartId)
+    await getCart()
+  } catch (error) {
+    alert('刪除購物車項目失敗')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 const couponCode = ref('')

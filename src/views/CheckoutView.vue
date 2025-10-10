@@ -4,11 +4,29 @@ import { computed, onMounted, ref } from 'vue'
 import { apiGetCart } from '@/api/cart'
 import { apiCreateOrder, apiProcessPayment } from '@/api/order'
 import Navbar from '@/components/Navbar.vue'
+import type { CartInfo } from '@/types/cart'
 import { useRouter } from 'vue-router'
 
 const step = ref<1 | 2>(1)
 
-const { data: cart } = apiGetCart()
+const cart = ref<CartInfo>({
+  carts: [],
+  total: 0,
+  final_total: 0,
+})
+
+const getCart = async () => {
+  try {
+    const res = await apiGetCart()
+    cart.value = res.data.data
+  } catch (error) {
+    alert('取得購物車失敗')
+  }
+}
+
+onMounted(() => {
+  getCart()
+})
 
 const orderId = ref<string | null>(null)
 

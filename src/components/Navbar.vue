@@ -1,7 +1,26 @@
 <script setup lang="ts">
 import { apiGetCart } from '@/api/cart'
+import type { CartInfo } from '@/types/cart'
+import { onMounted, ref } from 'vue'
 
-const { data: cart } = apiGetCart()
+const cart = ref<CartInfo>({
+  carts: [],
+  total: 0,
+  final_total: 0,
+})
+
+const getCart = async () => {
+  try {
+    const res = await apiGetCart()
+    cart.value = res.data.data
+  } catch (error) {
+    alert('取得購物車失敗')
+  }
+}
+
+onMounted(() => {
+  getCart()
+})
 </script>
 
 <template>

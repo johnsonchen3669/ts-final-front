@@ -11,7 +11,7 @@ import { Autoplay } from 'swiper/modules'
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
-import { apiAddCartItem } from '@/api/cart'
+import { apiAddCartItem, apiGetCart } from '@/api/cart'
 import { apiGetProductDetail, apiGetProducts } from '@/api/products'
 
 const productNum = ref(1)
@@ -61,13 +61,16 @@ onMounted(() => {
   }
 })
 
-const { mutate: addCartItem } = apiAddCartItem()
-
-const handleAddCartItem = () => {
-  addCartItem({
-    product_id: productId.value,
-    qty: productNum.value,
-  })
+const handleAddCartItem = async () => {
+  try {
+    await apiAddCartItem({
+      product_id: productId.value,
+      qty: productNum.value,
+    })
+    await apiGetCart()
+  } catch (error) {
+    alert('加入購物車失敗')
+  }
 }
 </script>
 
