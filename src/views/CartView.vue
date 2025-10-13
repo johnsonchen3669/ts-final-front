@@ -4,14 +4,23 @@ import 'swiper/css'
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
-import { apiDeleteCartItem, apiGetCart, apiUpdateCartItem } from '@/api/cart'
 import { apiApplyCoupon } from '@/api/order'
 import { apiGetProducts } from '@/api/products'
+import { useCartStore } from '@/stores/cartStore'
+import type { CartInfo } from '@/types/cart'
+import type { Product } from '@/types/product'
+import { storeToRefs } from 'pinia'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
 import { onMounted, ref } from 'vue'
 
-const { data: cart } = apiGetCart()
+const cartStore = useCartStore()
+
+const { cart, isUpdating, isDeleting } = storeToRefs(cartStore)
+
+onMounted(() => {
+  getProducts()
+})
 
 const swiperContainer = ref<HTMLElement | null>(null)
 
@@ -36,39 +45,54 @@ onMounted(() => {
   }
 })
 
-const { data } = apiGetProducts()
+const getProducts = async () => {
+  try {
+    const res = await apiGetProducts()
+    products.value = res.data.products
+  } catch (error) {
+    alert('取得產品列表失敗')
+  }
+}
 
-const { mutate: updateCartItem, isPending: isUpdating, isSuccess } = apiUpdateCartItem()
+const products = ref<Product[]>([])
 
-type CartItem = Exclude<ReturnType<typeof apiGetCart>['data']['value'], undefined>['carts'][number]
+type CartItem = CartInfo['carts'][number]
 
-const handleUpdateCartItem = (type: 'plus' | 'minus', cartItem: CartItem) => {
+const handleUpdateCartItem = async (type: 'plus' | 'minus', cartItem: CartItem) => {
   let cartItemNum = cartItem.qty
   if (type === 'plus') {
     cartItemNum++
   } else {
     cartItemNum--
   }
-  updateCartItem({
+
+  cartStore.updataCartItem({
     id: cartItem.id,
     product_id: cartItem.product.id,
     qty: cartItemNum,
   })
 }
 
-const { mutate: deleteCartItem, isPending: isDeleting } = apiDeleteCartItem()
-
-const handleDeleteCartItem = (cartId: string) => {
-  deleteCartItem(cartId)
+const handleDeleteCartItem = async (cartId: string) => {
+  cartStore.deleteCartItem(cartId)
 }
 
 const couponCode = ref('')
-const { mutate: applyCoupon, isPending: isApplyingCoupon } = apiApplyCoupon()
 
-const handleApplyCoupon = () => {
+const isApplyingCoupon = ref(false)
+
+const handleApplyCoupon = async () => {
   if (!couponCode.value.trim()) return
 
-  applyCoupon(couponCode.value)
+  try {
+    isApplyingCoupon.value = true
+
+    await apiApplyCoupon(couponCode.value)
+  } catch (error) {
+    alert('套用優惠券失敗，優惠券已過期或不存在')
+  } finally {
+    isApplyingCoupon.value = false
+  }
 }
 </script>
 
@@ -205,7 +229,7 @@ const handleApplyCoupon = () => {
         <h3 class="fw-bold">你可能會喜歡的植栽</h3>
         <div ref="swiperContainer" class="swiper mt-4 mb-5">
           <div class="swiper-wrapper">
-            <div v-for="product in data?.products" :key="product.id" class="swiper-slide">
+            <div v-for="product in products" :key="product.id" class="swiper-slide">
               <div class="card border-0 mb-4 position-relative position-relative">
                 <img
                   :src="product.imageUrl"

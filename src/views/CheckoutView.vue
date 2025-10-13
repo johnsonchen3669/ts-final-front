@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 
-import { apiGetCart } from '@/api/cart'
 import { apiCreateOrder, apiProcessPayment } from '@/api/order'
 import Navbar from '@/components/Navbar.vue'
+import { useCartStore } from '@/stores/cartStore'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const step = ref<1 | 2>(1)
 
-const { data: cart } = apiGetCart()
+const cartStore = useCartStore()
+
+const { cart } = storeToRefs(cartStore)
 
 const orderId = ref<string | null>(null)
 
@@ -29,21 +34,25 @@ const submitForm = () => {
   submitBtn.value?.click()
 }
 
-const { mutateAsync: submitOrder, isPending: isSubmitting } = apiCreateOrder()
+const isSubmitting = ref(false)
 
 const handleSubmit = async () => {
   try {
+    isSubmitting.value = true
+
     const { message, ...userData } = form.value
 
-    const res = await submitOrder({
+    const res = await apiCreateOrder({
       user: userData,
       message,
     })
 
-    orderId.value = res.orderId
+    orderId.value = res.data.orderId
     step.value = 2
   } catch (error) {
     alert('訂單建立失敗')
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -74,27 +83,22 @@ const handleNextStep = () => {
   submitForm()
 }
 
-const { mutateAsync: processPayment, isPending: isProcessingPayment } = apiProcessPayment()
+const isProcessingPayment = ref(false)
 
 const handleProcessPayment = async () => {
   if (!orderId.value) return
 
   try {
-    await processPayment(orderId.value)
+    isProcessingPayment.value = true
+
+    await apiProcessPayment(orderId.value)
     router.push('/checkout-success')
   } catch (error) {
     alert('付款失敗')
+  } finally {
+    isProcessingPayment.value = false
   }
 }
-
-const router = useRouter()
-
-onMounted(() => {
-  if (cart.value?.carts.length === 0) {
-    alert('購物車尚未有商品')
-    router.push('/products')
-  }
-})
 </script>
 
 <template>
@@ -235,7 +239,9 @@ onMounted(() => {
               >
               <button
                 @click="handleNextStep"
-                :disabled="isSubmitting"
+                :disabled="
+                  isSubmitting || !isEmailValid || !isNameValid || !isPhoneValid || !isAddressValid
+                "
                 type="button"
                 class="btn btn-dark py-3 px-7"
               >
