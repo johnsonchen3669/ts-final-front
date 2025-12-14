@@ -31,6 +31,12 @@ const submitBtn = ref<HTMLButtonElement | null>(null)
 
 const isSubmitted = ref<boolean>(false)
 
+// 追蹤欄位是否已被觸碰（離開焦點），用於即時顯示各欄位的錯誤訊息
+const emailTouched = ref(false)
+const nameTouched = ref(false)
+const phoneTouched = ref(false)
+const addressTouched = ref(false)
+
 const submitForm = () => {
   isSubmitted.value = true
   submitBtn.value?.click()
@@ -163,57 +169,77 @@ const handleProcessPayment = async () => {
               <label for="email" class="text-muted mb-0">電子信箱</label>
               <input
                 v-model="form.email"
+                @blur="emailTouched = true"
                 required
                 type="email"
                 class="form-control"
+                :class="{ 'is-invalid': !isEmailValid && (isSubmitted || emailTouched) }"
                 id="email"
                 placeholder="example@gmail.com"
               />
-              <span v-if="!isEmailValid && isSubmitted" class="text-danger small mt-1">
+              <div
+                v-if="!isEmailValid && (isSubmitted || emailTouched)"
+                class="invalid-feedback d-block"
+              >
                 請輸入正確的電子信箱
-              </span>
+              </div>
             </div>
             <div class="mb-2">
               <label for="name" class="text-muted mb-0">姓名</label>
               <input
                 v-model="form.name"
+                @blur="nameTouched = true"
                 required
                 type="text"
                 class="form-control"
+                :class="{ 'is-invalid': !isNameValid && (isSubmitted || nameTouched) }"
                 id="name"
                 placeholder="王漂亮"
               />
-              <span v-if="!isNameValid && isSubmitted" class="text-danger small mt-1">
+              <div
+                v-if="!isNameValid && (isSubmitted || nameTouched)"
+                class="invalid-feedback d-block"
+              >
                 請輸入姓名
-              </span>
+              </div>
             </div>
             <div class="mb-2">
               <label for="tel" class="text-muted mb-0">手機</label>
               <input
                 v-model="form.tel"
+                @blur="phoneTouched = true"
                 required
                 type="text"
                 class="form-control"
+                :class="{ 'is-invalid': !isPhoneValid && (isSubmitted || phoneTouched) }"
                 id="tel"
                 placeholder="0912345678"
               />
-              <span v-if="!isPhoneValid && isSubmitted" class="text-danger small mt-1">
+              <div
+                v-if="!isPhoneValid && (isSubmitted || phoneTouched)"
+                class="invalid-feedback d-block"
+              >
                 請輸入正確的手機號碼
-              </span>
+              </div>
             </div>
             <div class="mb-2">
               <label for="address" class="text-muted mb-0">地址</label>
               <input
                 v-model="form.address"
+                @blur="addressTouched = true"
                 required
                 type="text"
                 class="form-control"
+                :class="{ 'is-invalid': !isAddressValid && (isSubmitted || addressTouched) }"
                 id="address"
                 placeholder="高雄市新興區"
               />
-              <span v-if="!isAddressValid && isSubmitted" class="text-danger small mt-1">
+              <div
+                v-if="!isAddressValid && (isSubmitted || addressTouched)"
+                class="invalid-feedback d-block"
+              >
                 請輸入正確的地址
-              </span>
+              </div>
             </div>
             <div class="mb-2">
               <label for="message" class="text-muted mb-0">留言</label>

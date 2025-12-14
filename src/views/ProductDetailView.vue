@@ -14,6 +14,7 @@ import Navbar from '@/components/Navbar.vue'
 import { apiGetProductDetail, apiGetProducts } from '@/api/products'
 import { useCartStore } from '@/stores/cartStore'
 import type { Product } from '@/types/product'
+import Swal from 'sweetalert2'
 
 const productNum = ref(1)
 
@@ -107,10 +108,22 @@ watch(
 )
 
 const handleAddCartItem = async () => {
-  cartStore.addCartItem({
-    product_id: productId.value,
-    qty: productNum.value,
-  })
+  try {
+    await cartStore.addCartItem({
+      product_id: productId.value,
+      qty: productNum.value,
+    })
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '已加入購物車',
+      showConfirmButton: false,
+      timer: 1500,
+    })
+  } catch {
+    alert('加入購物車失敗')
+  }
 }
 </script>
 

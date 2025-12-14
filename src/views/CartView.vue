@@ -9,6 +9,7 @@ import { useCartStore } from '@/stores/cartStore'
 import type { CartInfo } from '@/types/cart'
 import type { Product } from '@/types/product'
 import { storeToRefs } from 'pinia'
+import Swal from 'sweetalert2'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
 import { nextTick, onMounted, ref, watch } from 'vue'
@@ -96,6 +97,15 @@ const handleApplyCoupon = async () => {
     isApplyingCoupon.value = true
 
     await apiApplyCoupon(couponCode.value)
+    await cartStore.getCart()
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '優惠券套用成功',
+      showConfirmButton: false,
+      timer: 1500,
+    })
   } catch {
     alert('套用優惠券失敗，優惠券已過期或不存在')
   } finally {
