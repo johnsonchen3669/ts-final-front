@@ -1,4 +1,5 @@
-import { fileURLToPath, resolve, URL } from 'node:url'
+import { fileURLToPath, URL } from 'node:url'
+import { dirname, resolve } from 'path'
 
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
@@ -6,6 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === 'production' ? '/ts-final-front/' : '/',
   plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
@@ -16,10 +18,10 @@ export default defineConfig({
     target: 'esnext',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        main: resolve(dirname(fileURLToPath(import.meta.url)), 'index.html'),
       },
       output: {
-        dir: resolve(__dirname, 'dist'),
+        dir: resolve(dirname(fileURLToPath(import.meta.url)), 'dist'),
       },
     },
   },
