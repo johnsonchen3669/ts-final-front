@@ -19,11 +19,16 @@ const router = createRouter({
       name: 'product-detail',
       component: () => import('../views/ProductDetailView.vue'),
     },
-    // {
-    //   path: '/checkout',
-    //   name: 'checkout',
-    //   component: () => import('../views/CheckoutView.vue'),
-    // },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('../views/CartView.vue'),
+    },
+    {
+      path: '/checkout',
+      name: 'checkout',
+      component: () => import('../views/CheckoutView.vue'),
+    },
     {
       path: '/checkout-success',
       name: 'checkout-success',

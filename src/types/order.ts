@@ -18,3 +18,11 @@ export type ApplyCouponResponse = {
     final_total: number
   }
 }
+
+export type formInfo = {
+  email: string
+  name: string
+  tel: string
+  address: string
+  message: string
+}

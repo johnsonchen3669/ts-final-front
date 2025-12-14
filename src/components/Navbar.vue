@@ -1,13 +1,14 @@
 <script setup lang="ts">
-// import { useCartStore } from '@/stores/cartStore'
+import { useCartStore } from '@/stores/cartStore'
+import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 
-// const cartStore = useCartStore()
+const cartStore = useCartStore()
 
-// const { cart } = storeToRefs(cartStore)
+const { cart } = storeToRefs(cartStore)
 
 onMounted(() => {
-  // cartStore.getCart()
+  cartStore.getCart()
 })
 </script>
 
@@ -42,11 +43,11 @@ onMounted(() => {
         <RouterLink class="d-none d-md-block nav-item nav-link" to="/cart"
           ><div className="position-relative">
             <i className="fas fa-shopping-cart"></i>
-            <!-- <span
+            <span
               class="position-absolute badge text-bg-dark rounded-circle"
               style="bottom: 12px; left: 12px"
-              >{{ cart?.carts.length }}</span 
-            >-->
+              >{{ cart?.carts.length }}</span
+            >
           </div></RouterLink
         >
       </div>

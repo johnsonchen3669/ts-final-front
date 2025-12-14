@@ -12,14 +12,14 @@ import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
 import { apiGetProductDetail, apiGetProducts } from '@/api/products'
+import { useCartStore } from '@/stores/cartStore'
 import type { Product } from '@/types/product'
-// import { useCartStore } from '@/stores/cartStore'
 
 const productNum = ref(1)
 
 const route = useRoute()
 
-// const cartStore = useCartStore()
+const cartStore = useCartStore()
 
 const productId = computed(() => route.params.id as string)
 
@@ -107,10 +107,10 @@ watch(
 )
 
 const handleAddCartItem = async () => {
-  //   cartStore.addCartItem({
-  //     product_id: productId.value,
-  //     qty: productNum.value,
-  //   })
+  cartStore.addCartItem({
+    product_id: productId.value,
+    qty: productNum.value,
+  })
 }
 </script>
 
